@@ -3,45 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <title>后台表格插件</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/backend.table.css">
+    <style>
+        .box{width:80%;margin:50px auto;}
+    </style>
+    <script src="lodash.js"></script>
+    <script src="backend.table.js"></script>
 </head>
 <body>
-    <table>
-        <thead>
-            <tr>
-                <th>1</th>
-                <th>2</th>
-                <th>3</th>
-                <th>4</th>
-                <th>5</th>
-                <th>6</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="box">
+        <table class="backend-table" id="backendTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>2</th>
+                    <th>3</th>
+                    <th>4</th>
+                    <th>5</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>a</td>
+                    <td>b</td>
+                    <td>c</td>
+                    <td>d</td>
+                    <td>e</td>
+                    <td>
+                        <span>11</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>a</td>
+                    <td>b</td>
+                    <td>c</td>
+                    <td>d</td>
+                    <td>e</td>
+                    <td>
+                        <span>11</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>a</td>
+                    <td>b</td>
+                    <td>c</td>
+                    <td>d</td>
+                    <td>e</td>
+                    <td>
+                        <span>11</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
 </body>
 </html>
+<script>
+    var oElement=document.getElementById('backendTable');
+    var data=[{a:123,b:234,c:454,d:545,e:657,f:98},{a:1111,b:222,x:333,d:4444,e:555,f:666}];
+    var columns=['a','b','c','d','e','f'];
+    var arr=[[11,22,33,44,55,66],'a','b','c','d','e','f'];
+    var bt=BackendTable(oElement,{data:arr});
+</script>

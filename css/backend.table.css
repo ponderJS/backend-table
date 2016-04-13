@@ -1,0 +1,9 @@
+@charset "UTF-8";
+
+.backend-table{table-layout:fixed;width:100%;box-sizing:border-box;}
+.backend-table > thead > tr{border-bottom:2px solid #b2b2b2;}
+.backend-table > tbody > tr{border-bottom:1px solid #b2b2b2;}
+.backend-table > tbody > tr:hover{background-color: #DEFEDF;}
+.backend-table th,.backend-table td{box-sizing:border-box;padding:6px 4px;}
+.backend-table th:first-child{width:3em;text-align:left;}
+td.hide>span,td>span.hide{visibility:hidden;}
