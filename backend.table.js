@@ -4,7 +4,6 @@
     }
     // 暂时引用
     var _difference = _.difference;
-    // 行号必须有，管理项可选
     BackendTable.prototype = {
         consotructor: BackendTable,
         init: function (selector, obj) {
@@ -41,31 +40,34 @@
                     invalidArr = _difference(cols, Object.keys(data[0]));// 无效的字段
                     for (i = 0; i < trsLen; i++) {
                         tds = trs[i].children;
-                        len = tds.length;
-                        rowData = data[i];
-                        if (!rowData) {
+                        rowData = data[i] || {};
+                        len = Object.keys(data[0]).length || tds.length;
+                        if (!Object.keys(rowData).length) {
                             trs[i].className = 'empty';
                         } else {
                             trs[i].className = '';
                         }
-                        /** 表格结构的列数小于数据的列数时会忽略多余的数据项 可以考虑按数据量循环**/
                         for (j = 0; j < len; j++) {
+
                             if (j) {
                                 if (manage) {
-                                    if (j != len - 1) {
-                                        tdData = rowData ? cols[j - 1] ? rowData[cols[j - 1]] ? rowData[cols[j - 1]] : '-' : '' : '';
+                                    if (j < tds.length - 1 && tds[j]) {
+                                        tdData = rowData ? cols[j - 1] ? rowData[cols[j - 1]] ? rowData[cols[j - 1]] : '' : '' : '';
                                         tds[j].innerHTML = tdData;
                                         tds[j].title = tdData;
-                                    } else {
-                                        rowData ? tds[j].className = '' : tds[j].className = 'hide';
+                                    }
+                                    if (j == tds.length - 1 && tds[j]) {
+                                        Object.keys(rowData).length ? tds[j].className = '' : tds[j].className = 'hide';
                                     }
                                 } else {
-                                    tdData = rowData ? cols[j - 1] ? rowData[cols[j - 1]] ? rowData[cols[j - 1]] : '-' : '' : '';
-                                    tds[j].innerHTML = tdData;
-                                    tds[j].title = tdData;
+                                    if (tds[j]) {
+                                        tdData = rowData ? cols[j - 1] ? rowData[cols[j - 1]] ? rowData[cols[j - 1]] : '' : '' : '';
+                                        tds[j].innerHTML = tdData;
+                                        tds[j].title = tdData;
+                                    }
                                 }
                                 // 最后一个td放隐藏字段
-                                if (j == len - 1 && hideArr.length && rowData) {
+                                if (j == tds.length - 1 && hideArr.length && rowData) {
 
                                     for (k = 0; k < hideArr.length; k++) {
                                         // 约定数据行唯一标识为 id    
@@ -74,7 +76,7 @@
                                 }
                             } else {
                                 // 行号必须显示
-                                tds[j].innerHTML = rowData ? (page - 1) * trsLen + i + 1 : '-';
+                                tds[j].innerHTML = Object.keys(rowData).length ? (page - 1) * trsLen + i + 1 : '-';
                             }
                         }
                     }
@@ -83,7 +85,7 @@
                 }
                 // 找不到的字段
                 if (invalidArr.length) {
-                    console.warn('\u9519\u8bef\u6216\u591a\u4f59\u5b57\u6bb5', invalidArr.join(','));
+                    console.warn('\u4e0d\u5339\u914d\u5b57\u6bb5', invalidArr.join(','));
                 }
             }
             if (Array.isArray(data[0]) && !cols) {
@@ -101,23 +103,23 @@
                     for (j = 0; j < len; j++) {
                         if (j) {
                             // 存在管理项
-                            if(manage){
-                                if(j==tds.length-1){
-                                    rowData.length?tds[j].className = '' : tds[j].className = 'hide';
+                            if (manage) {
+                                if (j == tds.length - 1) {
+                                    rowData.length ? tds[j].className = '' : tds[j].className = 'hide';
                                 }
-                                if(j<tds.length-1 && tds[j]){
-                                    tds[j].innerHTML=rowData[j] ? rowData[j] : '';
+                                if (j < tds.length - 1 && tds[j]) {
+                                    tds[j].innerHTML = rowData[j] ? rowData[j] : '';
                                     tds[j].title = rowData[j] ? rowData[j] : '';
                                 }
-                            }else{
-                               if(tds[j]){
-                                   tds[j].innerHTML=rowData[j] ? rowData[j] : '';
-                                   tds[j].title = rowData[j] ? rowData[j] : '';
-                               } 
+                            } else {
+                                if (tds[j]) {
+                                    tds[j].innerHTML = rowData[j] ? rowData[j] : '';
+                                    tds[j].title = rowData[j] ? rowData[j] : '';
+                                }
                             }
-                            
-                            if(j==tds.length-1){
-                                hideArr = rowData.slice(tds.length);
+
+                            if (j == tds.length - 1) {
+                                hideArr = rowData.slice(manage?tds.length-1:tds.length);
                                 tds[tds.length - 1].setAttribute('data-string', hideArr.join());
                             }
                         } else {
