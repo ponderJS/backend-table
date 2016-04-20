@@ -2,29 +2,115 @@
     var BackendTable = function (selector, obj) {
         return new BackendTable.prototype.init(selector, obj);
     }
-    // 暂时引用
-    var _difference = _.difference;
+    var _difference=function(arr,values){
+        var length=arr.length;
+        var valueLength=values.length;
+        var index=-1,result=[];
+        outer:while(++index<length){
+            var value=arr[index];
+            var valueIndex=valueLength;
+            while(valueIndex--){
+                if(values[valueIndex]==value){
+                    continue outer;
+                }
+            }
+            result.push(value);
+        }
+        return result;
+    }
+    var _extend=function(obj,source){
+        for(var key in source){
+            obj[key]=source[key];
+        }
+        return obj;
+    }
+    var _ajax=function(json){
+        var json=json || {};
+        var Type=json.type || 'GET';
+        var params=json.params || {};
+        var xhr=new XMLHttpRequest();
+        xhr.timeout=5000;
+        if(typeof json.url=='string'){
+            switch(Type.toUpperCase()){
+                case 'GET':
+                    xhr.open('GET',json.url+'?'+_serialize(params),true);
+                    xhr.send();
+                    break;
+                case　'POST':
+                    xhr.open('POST',json.url,true);
+                    xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+                    xhr.send(_serialize(params));
+                    break;
+            }
+        }else return;
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState==4){
+                if(xhr.status>=200 && xhr.status<300){
+                    json.success && json.success(xhr.responseText,xhr);
+                }else{
+                    json.error && json.error(xhr);
+                }
+            }
+        }
+        xhr.ontimeout=function(){
+            console.error('timeout!');
+            xhr.abort();
+        }
+    }
+    var _serialize=function(json){
+        var i,res=[];
+        for(i in json){
+            res.push(i+'='+json[i])
+        }
+        return res.join('&');
+    }
     BackendTable.prototype = {
         consotructor: BackendTable,
         init: function (selector, obj) {
+            var _this=this;
+            //  管理
+            this.manage= obj.edit || obj['delete'] || false;
             if (!selector || Object.prototype.toString.call(selector) !== "[object HTMLTableElement]") {
                 console.error('Table element is required!');
             } else {
                 this.target = selector;
             }
-            //   列名
-            if (Array.isArray(obj.columns)) {
-                this.cols = obj.columns;
-            }
-            if (Array.isArray(obj.data)) {
-                //  array data
+            if (obj.data) {
+                //  local data
                 this.setData(obj);
                 return;
             }
-
-            if (typeof obj.url == "string") {
-                //  object data
+            if (typeof obj.url == "string" && obj.columns) {
+                //  ajax data
+                this.cols=obj.columns;
+                this.url=obj.url;
+                this.params=obj.params;
+                obj.success=function(res){
+                    var res=JSON.parse(res);
+                    _this.setData(res);
+                }
+                obj.error=function(res){
+                    console.error(res);
+                }
+                _ajax(obj);
             }
+            
+        },
+        query:function(obj){
+            var _this=this;
+            var settings={}
+            var params=this.params;
+            params=_extend(params,obj?obj:{});
+            settings.url=this.url;
+            settings.params=params;
+            settings.success=function(res){
+                var res=JSON.parse(res);
+                _this.setData(res);
+            }
+            settings.error=function(res){
+                console.error(res);
+            }
+            _ajax(settings);
         },
         setData: function (obj) {
             var trs = this.target.tBodies[0].children;
@@ -33,7 +119,6 @@
             var data = obj.data;   //  标准数据格式：[{key:value,...}...]
             var page = obj.page || 1; // 当前页码
             var i, j, k, l, len, tds, rowData, tdData, hideArr, invalidArr;
-            var manage = obj.edit || obj['delete'] || obj.lock || false;
             if (Object.prototype.toString.call(data[0]) == "[object Object]") {
                 if (cols) {
                     hideArr = _difference(Object.keys(data[0]), cols);// 不显示在表格里的字段
@@ -48,9 +133,11 @@
                             trs[i].className = '';
                         }
                         for (j = 0; j < len; j++) {
-
+                            // 大于0
                             if (j) {
-                                if (manage) {
+                                // 带管理
+                                if (this.manage) {
+                                    // 行号与管理项之间的数据
                                     if (j < tds.length - 1 && tds[j]) {
                                         tdData = rowData ? cols[j - 1] ? rowData[cols[j - 1]] ? rowData[cols[j - 1]] : '' : '' : '';
                                         tds[j].innerHTML = tdData;
@@ -59,6 +146,7 @@
                                     if (j == tds.length - 1 && tds[j]) {
                                         Object.keys(rowData).length ? tds[j].className = '' : tds[j].className = 'hide';
                                     }
+                                // 纯数据行
                                 } else {
                                     if (tds[j]) {
                                         tdData = rowData ? cols[j - 1] ? rowData[cols[j - 1]] ? rowData[cols[j - 1]] : '' : '' : '';
@@ -103,7 +191,7 @@
                     for (j = 0; j < len; j++) {
                         if (j) {
                             // 存在管理项
-                            if (manage) {
+                            if (this.manage) {
                                 if (j == tds.length - 1) {
                                     rowData.length ? tds[j].className = '' : tds[j].className = 'hide';
                                 }
@@ -119,7 +207,7 @@
                             }
 
                             if (j == tds.length - 1) {
-                                hideArr = rowData.slice(manage?tds.length-1:tds.length);
+                                hideArr = rowData.slice(this.manage?tds.length-1:tds.length);
                                 tds[tds.length - 1].setAttribute('data-string', hideArr.join());
                             }
                         } else {
